@@ -1,0 +1,25 @@
+Package: ColonyRepr
+Type: Package
+Title: Functions to assist in calculating colony representativeness of tracked colonies within the SEATRACK database
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Lars", "Ursem",
+      email = "lars.ursem@live.nl",
+      role = c("aut", "cre")
+    )
+  )
+Description: More about what it does (maybe more than one line).
+    Continuation lines should be indented.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: 
+        stats,
+        dplyr,
+        magrittr,
+        rlang,
+        sf,
+        sp,
+        adehabitatHR,
+RoxygenNote: 7.3.3
