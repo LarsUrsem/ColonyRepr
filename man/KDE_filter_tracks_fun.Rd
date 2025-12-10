@@ -2,33 +2,31 @@
 % Please edit documentation in R/KDE_filter_tracks_fun.R
 \name{KDE_filter_tracks_fun}
 \alias{KDE_filter_tracks_fun}
-\title{Filter for tracks to be assessed in the colony representativeness analysis}
+\title{Filter for tracks with sufficient location estimates}
 \usage{
 KDE_filter_tracks_fun(
   dataset,
-  species.,
-  colony.,
   month. = 12,
   min_points_per_track = 10,
   min_Ninds_per_col = 5
 )
 }
 \arguments{
-\item{dataset}{A dataset with location estimates. Must include a species, colony and Month column (tibble)}
+\item{dataset}{A dataset(tibble) with location estimates from a tracked colony. Must contain columns with species andcolony information.
+Also, a Month-column should be present, indicating in which month(numeric) a location estimate was made. As well as a column with a unique identifier per yearly migration track (`individ_Year`).}
 
-\item{species.}{A species' name (character string)}
+\item{month.}{The month for which you wish to determine which tracks have sufficient location estimates (numeric)}
 
-\item{colony.}{A colony's name (character string)}
+\item{min_points_per_track}{Set to the minimum number of location estimates per month you deem sufficient in your analysis (numeric)}
 
-\item{month.}{A month (numeric)}
-
-\item{min_points_per_track}{(numeric)}
-
-\item{min_Ninds_per_col}{(numeric)}
+\item{min_Ninds_per_col}{Set to the minimum number of individuals with sufficient migration tracks that you deem appropriate for you analysis (numeric)}
 }
 \value{
-A results list with the total filtered dataset and a vector containing the migration ids as strings
+Returns a list with two elements:
+1) A tibble containing all the migratory tracks of the colony that meet the required number of locations (as set in `r min_points_per_track`);
+2) A vector with the names of the tracks that meet the requirements.
 }
 \description{
-Filter for tracks to be assessed in the colony representativeness analysis
+`r KDE_filter_tracks_fun()` takes a dataframe with (GLS-)tracking data from a colony and determines which migratory tracks (within a specified month) contain sufficient location estimates.
+It then goes on to check if a colony has enough tracked individuals with sufficient location estimates.
 }

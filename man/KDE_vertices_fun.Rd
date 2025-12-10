@@ -4,7 +4,13 @@
 \alias{KDE_vertices_fun}
 \title{Extract kernel vertices from UD-object}
 \usage{
-KDE_vertices_fun(UD, percent, species_colony_data, mean_smooths_per_species)
+KDE_vertices_fun(
+  UD,
+  percent,
+  species_colony_data,
+  mean_smooths_per_species,
+  projection
+)
 }
 \arguments{
 \item{UD}{A UD object from adehabitatHR::kernelUD()}

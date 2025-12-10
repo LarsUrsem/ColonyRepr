@@ -1,20 +1,24 @@
-#' Filter for tracks to be assessed in the colony representativeness analysis
+#' Filter for tracks with sufficient location estimates
 #'
-#' @param dataset A dataset with location estimates. Must include a species, colony and Month column (tibble)
-#' @param species. A species' name (character string)
-#' @param colony. A colony's name (character string)
-#' @param month. A month (numeric)
-#' @param min_points_per_track (numeric)
-#' @param min_Ninds_per_col (numeric)
+#' `KDE_filter_tracks_fun()` takes a tibble with (GLS-)tracking data from a colony and determines which migratory tracks (within a specified month) contain sufficient location estimates.
+#' It then goes on to check if a colony has enough tracked individuals with sufficient location estimates.
 #'
-#' @return A results list with the total filtered dataset and a vector containing the migration ids as strings
+#' @param dataset A tibble with location estimates from a tracked colony. Must contain columns with species andcolony information.
+#' Also, a Month-column should be present, indicating in which month(numeric) a location estimate was made. As well as a column with a unique identifier per yearly migration track (`individ_Year`).
+#' @param month. The month for which you wish to determine which tracks have sufficient location estimates (numeric)
+#' @param min_points_per_track Set to the minimum number of location estimates per month you deem sufficient in your analysis (numeric)
+#' @param min_Ninds_per_col Set to the minimum number of individuals with sufficient migration tracks that you deem appropriate for you analysis (numeric)
+#'
+#' @return Returns a list with two elements:
+#' 1) a tibble containing all the migratory tracks of the colony that meet the required number of locations (as set in `min_points_per_track`);
+#' 2) a vector with the names of the tracks that meet the requirements.
 #' @export
 #'
 #' @import dplyr
 #' @importFrom magrittr %>%
 KDE_filter_tracks_fun <- function(dataset,
-                                  species.,
-                                  colony.,
+                                  # species.,
+                                  # colony.,
                                   month. = 12,
                                   # h_par,
                                   min_points_per_track = 10,
@@ -22,9 +26,7 @@ KDE_filter_tracks_fun <- function(dataset,
 
   # filter for the spec-col data of interest
   spec_col_dat <- dataset %>%
-    dplyr::filter(species == species.,
-                  colony == colony.,
-                  Month == month.)
+    dplyr::filter(Month == month.)
 
   # Determine which tracks have 10 or more location estimates
   tracks_over_x_locations <- spec_col_dat %>%
@@ -33,7 +35,7 @@ KDE_filter_tracks_fun <- function(dataset,
     dplyr::filter(n >= min_points_per_track) %>%
     pull(individ_Year)
 
-  if(length(tracks_over_x_locations) == 0) {return(paste0("Not enough migration tracks: ",length(tracks_over_x_locations)))}
+  if(length(tracks_over_x_locations) == 0) {return(paste0("Not enough individuals with sufficient location estimates in the colony: ", n_individuals, " individuals"))}
 
   # Only include those tracks with 10 or more location estimates
   spec_col_dat2 <- spec_col_dat %>%
@@ -42,7 +44,7 @@ KDE_filter_tracks_fun <- function(dataset,
   # Determine how many individuals these tracks belong to
   n_individuals <- n_distinct(spec_col_dat2$individ_id)
 
-  if(n_individuals < min_Ninds_per_col){return(paste0("Not enough individuals in the colony: ",colony., " - ", n_individuals, " individuals"))}
+  if(n_individuals < min_Ninds_per_col){return(paste0("Not enough individuals with sufficient location estimates in the colony: ", n_individuals, " individuals"))}
 
   # Extract the migration track IDs for all tracks with 10 or more location estimates
   individual_tracks <- spec_col_dat2 %>%

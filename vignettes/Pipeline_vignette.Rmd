@@ -1,0 +1,213 @@
+---
+title: "Vignette for assessing colony representativeness using ColonyRepr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette for KDE_filter_tracks_fun}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,        # default figure width (inches)
+  fig.height = 5       # default figure height (inches)
+)
+```
+
+```{r setup,eval=TRUE, warning=FALSE, message=F}
+library(ColonyRepr)
+library(here)
+library(tidyverse)
+```
+
+## Here an example of how to estimate within-colony variation in wintering site selection and how much of that variation in currently captured
+We start by loading the sample data attached to this package
+```{r dataset}
+glimpse(Anda_puffins)
+```
+```{r,echo= F}
+# mean_smooths <- readRDS(here("data/RDS_files/mean_smooths.rds"))
+species_smooths_string <- mean_smooths %>% 
+  mutate(mean_h = round(mean_h,0)) %>% 
+  unite("spec_h", c(species, mean_h),sep = " = ") %>% 
+  pull(spec_h) %>% 
+  paste(collapse = ", ")
+```
+
+The structure of this data matches the SEATRACK data extracted using getPositions() from the seatrackR-package.
+In case different data is used, it needs the following columns:
+
+- species (character)
+- colony (character)
+- individual_id (character)
+- Track_id (character)(in the example data, first the non-breeding seasons was determined - e.g. 2020/2021 - which was then merged with the individual_id - e.g. "RINGNUMBER_2020/2021")
+- session_id (in case an individual could have been tracked on multiple occasions)(character)
+- timestamp/date_time (dttm)
+- longitude (numeric)
+- latitude (numeric)
+
+In addition, a smoothing parameter (h) is required to determine the utilization distribution (using adehabitatHR::kernelUD()). For the SEATRACK species, individual-level h-parameters were determined based on location estimates from November-February. Next, the species-average was calculated (and saved in a tibble: mean_smooths). These species-means (`r species_smooths_string`) were then used for all individuals of the matching species.
+<br>
+<br>
+
+First, we'll have to identify which tracks we deem complete enough to get an accurate/representative sample of location estimates. We do that using KDE_filter_tracks_fun().
+This function will generate an output in a list that contains two elements: 1) A dataset containing all the tracks within the colony that meet the required number of locations to be assessed (default = 10 location estimates per month); 2) a vector with the names of the tracks that meet the requirements.
+```{r Generating Tracks}
+Tracks <- ColonyRepr::KDE_filter_tracks_fun(
+      Anda_puffins, # This has to be a dataset filtered for your species-colony of interest.
+      month. = 12 # Let's focus on december for now
+    )
+
+names(Tracks)
+
+```
+You'll find that <i>Tracks</i> (a list) contains two elements named <i>Dataset</i> and <i>Tracks</i>
+
+These elements contain the original dataset filtered for the tracks with sufficient data.
+```{r Tracks output}
+glimpse(Tracks$Dataset)
+Tracks$Tracks[1:5] # To provide an example
+```
+
+Now that we've established which tracks we want to assess, we can move on to determining utilization densities for the selected tracks.
+We do this using KDE_UD_fun(), which is essentially an altered version of adehabitatHR::kernelUD(). 
+
+
+```{r UDs}
+UD_list <- list()
+
+# We here filter for the appropriate smoothing parameter (h) for the Atlantic puffin
+h_par <- mean_smooths %>%
+  filter(species == "Atlantic puffin") %>%
+  pull(mean_h)
+
+# We iterate over the selected tracks to determine individual-level UDs and store these in UD_list
+for (i in Tracks$Tracks[1:5]) # For this example we'll only do this for the first five tracks 
+  {
+  UD_list[[i]] <- ColonyRepr::KDE_UD_fun(
+    Tracks$Dataset %>% filter(individ_Year == i),
+    h_par
+  )
+}
+
+```
+KDE_UD_fun() returns a list with two elements: 1) an estUDm-object as produced by adehabitatHR::kernelUD() and 2) projection-string that was based on the individual tracking data.
+We'll use both these objects in the next step.
+<br>
+<br>
+Now we can use these track-level UDs to determine track-level kernel density contours, for any contour percentage we're interested in, e.g. 75%.
+```{r Kernel density contours}
+vertice_list <- lapply(UD_list, FUN = function(x) {
+        ColonyRepr::KDE_vertices_fun(
+          UD = x$UD,
+          projection = x$projection,
+          percent = 75, # Set to contour value of interest
+          species_colony_data = Tracks$Dataset,
+          mean_smooths_per_species = mean_smooths
+        )
+      })
+```
+KDE_vertices_fun() will return an sf-object with a (multi)polygon as geometry, capturing the area of the contour value of interest.
+```{r vertice_sf}
+vertice_list[[1]]
+```
+<br>
+At this point <i>vertice_list</i> contains separate sf-dataframes per track, which is not the format we can easily use in the next step. We'll thus apply bind_rows() to get all contour information into one sf-dataframe:
+```{r bind_rows(vertice_list)}
+vertices_all <- bind_rows(vertice_list)
+vertices_all
+
+```
+
+This we can feed into the next function in our pipeline: KDE_combine_areas_fun().
+The function will iteratively overlay track-level contours onto the same map and calculate the area covered by the combined contours. It will start with just one contour (randomly selected) and iteratively increase the number of contours by 1 to a maximum of the total number of individuals tracked within the colony (from n=1 to n=max is one sequence). If an individual is tracked over multiple non-breeding seasons, only one track will be used in this procedure. Each new iteration within a sequence will contain the same information as used in the previous iteration, with the addition of a 'new' contour.  
+To perform this procedure, the function will take an sf-dataframe with track-level contours, as well as the dataset created by KDE_filter_tracks_fun(). It will use this dataset to determine an appropriate projection based on all available colony tracking data. As KDE_combine_areas_fun() will perform an iteration to minimize sampling bias, it also asks for an n_iterations argument (default = 20).
+```{r KDE_combine_areas_fun}
+Combine <- ColonyRepr::KDE_combine_areas_fun(
+        vertices_sf = vertices_all,
+        tot_loc_data = Tracks$Dataset,
+        n_iterations = 20
+      )
+class(Combine)
+names(Combine)
+```
+As you can see, KDE_combine_areas_fun() will return a list with two objects: 1) a dataframe with with the computed surface area (km2) per iteration (including additional necessary information), and 2) the (colony-appropriate) projection used to calculate the areas.
+<br>
+We can use the iteration-dataframe to first calculate a mean surface per N-contours included in the calculation (a summarised-dataframe). Then, we'll fit a Michaelis-Menten function to the N-contours vs mean surface area data. This can be done using KDE_saturation_curve_fun() as follows:
+```{r KDE_saturation_curve_fun}
+Saturation_info <- KDE_saturation_curve(Combine$Kernel_areas)
+class(Saturation_info)
+names(Saturation_info)
+
+```
+This will create another list as output, containing 1) the original iteration-dataframe including parameter information from the best-fit MM-curve (provided in the columns <i>A_mean</i> and <i>B_mean</i>), and 2) the summarised-dataframe containing the same parameter information with the addition of representativeness per iteration (<i>Repr</i>) in an extra column. This is the ultimate value (as a percentage of the estimated total within-colony variation) we've been after throughout this analysis (Repr for n_inds == max(n_inds)). 
+```{r}
+Saturation_info$Kernel_areas_summarised %>% 
+  filter(n_inds == max(n_inds)) %>% 
+  pull(Repr)
+```
+
+
+```{r Plotting the curve, echo=F}
+n_ind <- max(Saturation_info$Kernel_areas_summarised$n_inds)
+A_mean <- unique(Saturation_info$Kernel_areas_summarised$A_mean)
+B_mean <- unique(Saturation_info$Kernel_areas_summarised$B_mean)
+
+MM_mean <- function(x) {A_mean*x/(B_mean+x)}
+
+y_95 = A_mean *0.95
+x_95 = y_95*B_mean/(A_mean-y_95)
+
+y_50 = A_mean *0.50
+x_50 = y_50*B_mean/(A_mean-y_50)
+
+higher_ind_or_x_95 <- max(n_ind, x_95)
+
+max_point <- Saturation_info$Kernel_areas_summarised %>% 
+  arrange(desc(n_inds)) %>% 
+  slice_head(n=1) %>% 
+  pull(mean)
+
+max_percent <- round(100/A_mean*max_point,0)
+perc_lines_col <- "grey70"
+
+ggplot(Saturation_info$Kernel_areas_summarised, aes(x = n_inds, y = mean)) +
+  geom_segment(y = y_95, x = 1, xend = x_95, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  stat_function(fun = MM_mean, col = "tomato", linetype = "dashed", lwd = 2)+
+  geom_point(size = 3, shape = 21, fill = "grey20", col = "black", alpha =0.8)+
+  geom_hline(yintercept = A_mean, linetype = "dotted")+
+  geom_text(x = x_95*0.25, y = A_mean*1.03, label = "Estimated within-colony variation", col = "grey40", size = 5)+
+  geom_segment(y = -1, x = x_95, yend = y_95, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  # geom_point(x = x_95, y = y_95, size = 3, col = perc_lines_col)+
+  geom_text(x = 0, y = y_95-A_mean/100*3, label = "95%", col = perc_lines_col, size = 5)+
+  geom_segment(y = y_50, x = 1, xend = x_50, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  geom_segment(y = -1, x = x_50, yend = y_50, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  geom_point(x = x_50, y = y_50, size = 4, shape = 21, fill = perc_lines_col, col = "black")+
+  geom_text(x = 0, y = y_50+A_mean/100*3, label = "50%", col = perc_lines_col, nudge_y = 1500, size = 5)+
+  # geom_text(x = B_mean+0.02*x_95, y = A_mean*0.035, label = ceiling(B_mean), col = perc_lines_col, size = 5)+
+  labs(y = "Colony representativeness (%)",
+       x = "Number of tracked individuals")+
+  scale_y_continuous(breaks = seq(from = 0, to = A_mean, length.out = 5),
+                     labels = seq(from = 0, to = 100, by = 25))+
+  scale_x_continuous(
+    limits = c(0, round(higher_ind_or_x_95+5,-1)))+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 20, margin = margin(b=20)),
+        plot.subtitle = element_text(size = 20),
+        axis.title.x = element_text(size = 22,margin = margin(t=8, b = 5)),
+        axis.title.y.left = element_text(size = 22,margin = margin(r=8)),
+        axis.title.y.right = element_text(size = 22,margin = margin(l=8)),
+        axis.text = element_text(size = 18),
+        legend.text = element_text(size=30),
+        legend.title = element_blank(),
+        strip.text = element_text(size = 16),
+        legend.position = "none",
+        plot.title.position = "plot",
+        plot.background = element_rect(fill = "white", color = "white"),
+        legend.key.width = unit(0.5, units="cm"))+
+  coord_cartesian(clip = "off")
+```
+
+

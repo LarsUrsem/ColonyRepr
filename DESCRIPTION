@@ -23,3 +23,9 @@ Imports:
         sp,
         adehabitatHR,
 RoxygenNote: 7.3.3
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Depends: 
+    R (>= 3.5)
