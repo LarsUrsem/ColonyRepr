@@ -63,7 +63,7 @@ KDE_saturation_curve <- function(Kernel_areas
 
     col_dat_sum <- col_dat_sum %>%
       mutate("h_par" = h_par,
-             "perc" = perc,
+             "KDE_contour" = perc,
              "A_mean" = NA,
              "B_mean" = NA,
              Repr = NA)
@@ -79,7 +79,7 @@ KDE_saturation_curve <- function(Kernel_areas
 
     col_dat_sum <- col_dat_sum %>%
       mutate("h_par" = h_par,
-             "perc" = perc,
+             "KDE_contour" = perc,
              "A_mean" = A_mean,
              "B_mean" = B_mean,
              Repr = 100/A_mean * mean)

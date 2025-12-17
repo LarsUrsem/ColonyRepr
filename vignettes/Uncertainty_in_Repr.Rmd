@@ -1,0 +1,54 @@
+---
+title: "Uncertainty_in_Repr"
+author: "Lars Ursem"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Uncertainty_in_Repr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,        # default figure width (inches)
+  fig.height = 5       # default figure height (inches)
+)
+```
+
+```{r setup}
+library(ColonyRepr)
+library(here)
+library(tidyverse)
+```
+
+
+### Determining uncertainty
+In determining colony representativeness, we assume that the fitted MM-curve accurately describes the trajectory of increasing the number of tracked individuals over time. Since we make an estimate of the expected within-colony variation directly based on the parameter-values from the fitted MM-curve, which we then use to determine captured colony representativeness, the robustness of the MM-fit will directly influence the uncertainty around our calculated estimate of colony representativeness. 
+Let's describe an example. You have tracked 20 individuals from a certain colony and performed the analysis described above. The MM-curve is now fitted to 20 data points. The next year, you track another individual and add this to your dataset. Now, you'll fit the curve to 21 data points. Ideally, the parameters of the curve wouldn't change. However, this is not the case, as the new information will influence the fit. Consequently, you'll extract different parameter values from your second fit compared to your first fit. If these values are similar to the ones from your first fit, great! Your estimated colony representativeness will increase as predicted with the addition of this extra individual. However, if the parameter values of the second fit differ a lot from those of your first fit, your estimate of captured colony representativeness will vary accordingly. You can assume that your second calculation is closer to the truth, but you don't know how close. 
+<br>
+In the following analysis, we will investigate how a fitted Michaelis-Menten curve changes as the sample size of tracked individuals increases. For all fitted MM-curves, we can then determine how many individuals (n_to_track) we'd need to track to achieve a certain level of colony representativeness, in our case 50%.
+If all fitted curves are very similar, n_to_track will not differ a lot among the different fits, indicating a robust fitting process. However, as we'll see, the fitting is not always as robust. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Topics to include:
+
+- Repr over retrieval years
+- Sensitivity to h-parameter

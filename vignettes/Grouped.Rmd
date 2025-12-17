@@ -1,0 +1,234 @@
+---
+title: "Grouped analysis SEATRACK"
+author: "Lars Ursem"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Grouped analysis SEATRACK}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,        # default figure width (inches)
+  fig.height = 5       # default figure height (inches)
+)
+```
+
+```{r setup,warning=FALSE,message=F}
+library(ColonyRepr)
+library(tidyverse)
+library(ggridges)
+```
+
+To follow the steps described in this vignette, we must have determined colony representativeness (or <i>Repr</i>) for a decent number of species-colonies, preferably covering multiple species and colonies per species.
+<br>
+We've done that already and will now just load that data in a tibble that contains information on species, colony, month, N tracked individuals, used kernel contours, colony representativeness and uncertainty. MONTH AND UNCERTAINTY ARE NOT THERE YET
+
+```{r glimpse}
+glimpse(species_curves_tot_PN)
+```
+
+We can take this dataset and use it to visualise the species-colonies representativeness that we currently capture within SEATRACK.
+<br> 
+For example, we can make a histogram based on the <i>Repr</i> values from all assessed species-colonies:
+```{r total histogram, echo = F}
+KDE_selected <- 75
+PN_boundary <- 0.2
+
+# Setting group colors
+cols <- c("0" = "grey80", "1" = "lightblue", "2" = "orange")
+PN2_colors <- scale_color_manual(labels = c("0" = "No polar night problems",
+                                            "1" = "Affected by polar night",
+                                            "2" = "Not enough individuals"),values = cols)
+PN2_fill <- scale_fill_manual(labels = c("0" = "No polar night problems",
+                                         "1" = "Affected by polar night",
+                                         "2" = "Not enough individuals"),values = cols)
+
+
+species_curves_tot_PN %>% 
+  filter(KDE_vertice == KDE_selected,
+         species != "Arctic tern") %>% # We exclude the arctic tern as we couldn't assess any colonies due to their wintering site in midnight-sun areas 
+  mutate(PN = case_when(PN_prop_missing >= PN_boundary ~ 1,
+                        T ~ 0),
+         PN = factor(PN, levels = c("0","1")),
+         PN2 = case_when(#PN == "1" ~ "1",
+                         Repr == -1 ~ "2",
+                         T ~ PN),
+         PN2 = factor(PN2, levels = c("0","1","2"))) %>%  
+  # View()
+  ggplot(aes(x = Repr))+
+  geom_histogram(aes(fill = PN2), col = "grey20", boundary = -5, binwidth = 5,
+                 position = position_stack(reverse = TRUE),
+                 lwd = 0.3)+
+  labs(x = "Colony representativeness (%)",
+       y = "Number of species-colonies")+
+  theme_minimal()+
+  PN2_fill+
+  theme(plot.title = element_text(size = 20, margin = margin(b=20)),
+        plot.subtitle = element_text(size = 20),
+        axis.title.x = element_text(size = 18,margin = margin(t=8)),
+        axis.title.y.left = element_text(size = 18,margin = margin(t=8, r = 8)),
+        # axis.title.y.right = element_text(size = 18,margin = margin(t=8, l = 8, r = 8)),
+        axis.text = element_text(size = 15),
+        legend.text = element_text(size=8),
+        legend.title = element_blank(),
+        # strip.text = element_text(size = 16),
+        #legend.position = c(0.8,0.8),
+        # legend.position = "none",
+        # legend.position.inside = c(0.7, 0.25), # c(0,0) bottom left, c(1,1) top-right.
+        # legend.background = element_rect(fill = "white", colour = NA),
+        # legend.margin = margin(r=10,l=5,b=5, t=),
+        #legend.box.background= element_rect(),
+        # plot.margin = margin(t=10,b=10,l=10,r=150),
+        plot.title.position = "plot",
+        plot.background = element_rect(fill = "white", color = "white"),
+        legend.key.width = unit(0.5, units="cm"))+
+  coord_cartesian(clip = "off") 
+```
+You can see that within the assessed dataset of many species-colonies, there is a wide range of currently captured representativeness, from around 10% to almost 100%. I've also indicated some particular differences among species-colonies through the use of different fill colors. We have many species-colonies that were not assessed in this analysis due to a low sample size (orange; determined with the `min_Ninds_per_col`-argument in `KDE_filter_tracks_fun()`). We also have several species-colonies that we identified to be affected by polar night (blue) to a degree that inference of their location estimates is likely biased towards non-polar night areas.
+<br>
+<br>
+We can also split this up per species to get a better overview on a species-level:
+
+
+```{r species Repr ridges, echo = F, fig.height=8}
+
+species_ordered_repr <- c(species_curves_tot_PN %>% 
+                            filter(KDE_vertice == KDE_selected,
+                                   Repr > 0) %>% 
+                            group_by(species) %>% 
+                            dplyr::summarise(median_repr = median(Repr, na.rm = T),
+                                             N_inds = sum(N_inds)) %>% 
+                            arrange(desc(median_repr), desc(N_inds)) %>% 
+                            pull(species),"Arctic tern")
+
+species_curves_CR_ridge_prep <- species_curves_tot_PN %>% 
+  filter(KDE_vertice == KDE_selected,
+         species != "Black guillemot") %>% 
+  # left_join(PN_spec_cols, by = c("species", "colony")) %>% 
+  mutate(species = factor(species, levels = species_ordered_repr),
+         PN = case_when(PN_prop_missing >= PN_boundary ~ 1,
+                        T ~ 0),
+         PN = factor(PN, levels = c("0","1")),
+         PN2 = case_when(#PN == "1" ~ "1",
+                         Repr == -1 ~ "2",
+                         T ~ PN),
+         PN2 = factor(PN2, levels = c("0","1","2"))) %>% 
+  filter(species != "Arctic tern")
+
+species_curves_CR_ridge_prep %>% 
+    ggplot(aes(x = Repr))+
+    geom_histogram(col = "grey20", aes(fill = PN2),
+                   position = position_stack(reverse = TRUE), # makes sure the PN colonies are on top
+                   binwidth = 5,
+                   boundary = 0,
+                   lwd = 0.3)+ 
+    facet_wrap(~species, ncol = 1,
+               scales = "free_y",
+               strip.position = "left",)+
+    # geom_vline(xintercept = rb, color = "grey20", linetype = "dashed", size = 1) + # Line across all facets
+    labs(#title = paste0("Current representativeness  - Based on ", KDE_selected,"% KDE vertices"),
+      # subtitle = Sub_title,
+      x = "Colony representativeness (%)",
+    )+
+    scale_y_continuous(breaks = seq(from = 0, to = 10, by = 1))+
+    # scale_fill_manual(labels = c("0" = "No polar night problems",
+    #                              "1" = "Affected by polar night",
+    #                              "2" = "Not enough individuals"),
+    #                   values = c("0" = "grey80","1"= "lightblue", "2" = "orange"))+
+    PN2_fill+
+    theme_minimal()+
+    theme(plot.title = element_text(margin = margin(l=10, b = 5, t = 5), hjus = -0.3),
+          plot.title.position = "panel",
+          # plot.subtitle = element_text(margin = margin(b = 5, l = 10), hjust = rb/100, size = 14),
+          strip.text.y.left = element_text(angle = 0, size = 12),
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          axis.title.x = element_text(size = 18),
+          axis.text.x = element_text(size = 13),
+          panel.grid.minor.y = element_blank(),
+          legend.title = element_blank(),
+    )+
+    coord_cartesian(clip = "off") 
+
+
+```
+Now we can nicely see that variation in colony representativeness is present among both species and colonies within a species. For the species at the top of this plot we generally capture a high amount of the estimated within-colony variation whereas we generally don't capture as much for the species at the bottom of this plot. Then there are also several species where the histogram is very spread out, indicating strong among-colony variation.
+<br>
+<br>
+Using the parameters of the Michaelis-Menten curves that were fitted to each species-colony, we can also predict how many individuals we'd need to track in order to obtain a desired colony representativess percentage, for example 50%.
+```{r Desired Repr, echo =F, fig.height=8, warning=F}
+desired_percentage <- 50
+
+Ndesired <- species_curves_CR_ridge_prep %>% 
+    mutate(a_desired = A_mean *desired_percentage/100,
+           b_desired = a_desired *B_mean / (A_mean - a_desired),
+           Ninds_desired = ceiling(b_desired))
+
+species_ordered_desired <- Ndesired %>% 
+    # filter(KDE_vertice == KDE_selected) %>% 
+    group_by(species) %>% 
+    dplyr::summarise(median_desired = median(Ninds_desired, na.rm = T)) %>% 
+    arrange(desc(median_desired)) %>% 
+    pull(species)
+
+#Determine binwidth of the histograms based on the desired percentage
+BW <- ifelse(desired_percentage <= 60, 10, 20)
+
+Ndesired %>% 
+  mutate(species = factor(species, levels = species_ordered_desired)) %>% 
+  # mutate(species = factor(species, levels = species_ordered_desired),
+  #        PN = case_when(prop_missing_PN >= PN_boundary ~ 1,
+  #                       T ~ 0),
+  #        PN = factor(PN, levels = c("0","1")),
+  #        PN2 = case_when(#PN == "1" ~ "1",
+  #          Repr == -1 ~ "2",
+  #          T ~ PN),
+  #        PN2 = factor(PN2, levels = c("0","1","2"))) %>% 
+  # filter(!is.na(N_inds_desired_perc)) %>% 
+  ggplot(aes(x = Ninds_desired ))+
+  geom_histogram(col = "grey20", aes(fill = factor(PN)),
+                 position = position_stack(reverse = TRUE), # makes sure the PN colonies are on top
+                 binwidth = BW,
+                 # bins = 20,
+                 boundary = 0,
+                 lwd = 0.3)+ 
+  facet_wrap(~species, ncol = 1,
+             scales = "free_y",
+             strip.position = "left")+
+  labs(title = paste0("How many to track?  - ",desired_percentage,"% desired Repr"),
+       #subtitle = paste0("Based on ", KDE_selected,"% KDE vertices and ", Repr_boundary, "% desired representativeness"),
+       x = "N individuals to track",
+  )+
+  # scale_x_continuous(breaks = seq(from = 0, to = 1000, by = 50))+
+  scale_y_continuous(breaks = seq(from = 0, to = 10, by = 1))+
+  scale_fill_manual(labels = c("0" = "No polar night problems",
+                               "1" = "Affected by polar night"),
+                    values = c("grey80", "lightblue"))+
+  theme_minimal()+
+  theme(plot.title = element_text(margin = margin(l=10, b = 5, t = 5), hjus = -0.3),
+          plot.title.position = "panel",
+          # plot.subtitle = element_text(margin = margin(b = 5, l = 10), hjust = rb/100, size = 14),
+          strip.text.y.left = element_text(angle = 0, size = 12),
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          axis.title.x = element_text(size = 18),
+          axis.text.x = element_text(size = 13),
+          panel.grid.minor.y = element_blank(),
+          legend.title = element_blank(),
+    )+
+  coord_cartesian(clip = "off") 
+```
+
+
+
+
+
+
+
+
+

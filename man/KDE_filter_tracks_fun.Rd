@@ -12,8 +12,8 @@ KDE_filter_tracks_fun(
 )
 }
 \arguments{
-\item{dataset}{A dataset(tibble) with location estimates from a tracked colony. Must contain columns with species andcolony information.
-Also, a Month-column should be present, indicating in which month(numeric) a location estimate was made. As well as a column with a unique identifier per yearly migration track (`individ_Year`).}
+\item{dataset}{A tibble with location estimates from a tracked colony. Must contain columns with species andcolony information.
+Also, a month-column should be present, indicating in which month(numeric) a location estimate was made. As well as a column with a unique identifier per yearly migration track (`individ_Year`).}
 
 \item{month.}{The month for which you wish to determine which tracks have sufficient location estimates (numeric)}
 
@@ -23,10 +23,10 @@ Also, a Month-column should be present, indicating in which month(numeric) a loc
 }
 \value{
 Returns a list with two elements:
-1) A tibble containing all the migratory tracks of the colony that meet the required number of locations (as set in `r min_points_per_track`);
-2) A vector with the names of the tracks that meet the requirements.
+1) a tibble containing all the migratory tracks of the colony that meet the required number of locations (as set in `min_points_per_track`);
+2) a vector with the names of the tracks that meet the requirements.
 }
 \description{
-`r KDE_filter_tracks_fun()` takes a dataframe with (GLS-)tracking data from a colony and determines which migratory tracks (within a specified month) contain sufficient location estimates.
+`KDE_filter_tracks_fun()` takes a tibble with (GLS-)tracking data from a colony and determines which migratory tracks (within a specified month) contain sufficient location estimates.
 It then goes on to check if a colony has enough tracked individuals with sufficient location estimates.
 }

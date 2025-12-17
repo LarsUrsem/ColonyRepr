@@ -4,7 +4,7 @@
 #' It then goes on to check if a colony has enough tracked individuals with sufficient location estimates.
 #'
 #' @param dataset A tibble with location estimates from a tracked colony. Must contain columns with species andcolony information.
-#' Also, a Month-column should be present, indicating in which month(numeric) a location estimate was made. As well as a column with a unique identifier per yearly migration track (`individ_Year`).
+#' Also, a month-column should be present, indicating in which month(numeric) a location estimate was made. As well as a column with a unique identifier per yearly migration track (`individ_Year`).
 #' @param month. The month for which you wish to determine which tracks have sufficient location estimates (numeric)
 #' @param min_points_per_track Set to the minimum number of location estimates per month you deem sufficient in your analysis (numeric)
 #' @param min_Ninds_per_col Set to the minimum number of individuals with sufficient migration tracks that you deem appropriate for you analysis (numeric)
@@ -26,7 +26,7 @@ KDE_filter_tracks_fun <- function(dataset,
 
   # filter for the spec-col data of interest
   spec_col_dat <- dataset %>%
-    dplyr::filter(Month == month.)
+    dplyr::filter(month == month.)
 
   # Determine which tracks have 10 or more location estimates
   tracks_over_x_locations <- spec_col_dat %>%

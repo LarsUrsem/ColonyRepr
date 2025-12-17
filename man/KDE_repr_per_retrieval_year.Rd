@@ -4,10 +4,10 @@
 \alias{KDE_repr_per_retrieval_year}
 \title{Function to determine representativeness of data collected up to and including certain retrieval years.}
 \usage{
-KDE_repr_per_retrieval_year(vertices_sf, n_iterations = 20)
+KDE_repr_per_retrieval_year(contours_sf, n_iterations = 20)
 }
 \arguments{
-\item{vertices_sf}{An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage}
+\item{contours_sf}{An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage}
 
 \item{n_iterations}{How many iterations should be used in the area-combining process}
 }

@@ -1,5 +1,7 @@
 ---
 title: "Vignette for assessing colony representativeness using ColonyRepr"
+author: "Lars Ursem"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette for KDE_filter_tracks_fun}
@@ -20,12 +22,15 @@ knitr::opts_chunk$set(
 library(ColonyRepr)
 library(here)
 library(tidyverse)
+library(sf)
+library(units)
 ```
 
 ## Here an example of how to estimate within-colony variation in wintering site selection and how much of that variation in currently captured
-We start by loading the sample data attached to this package
-```{r dataset}
-glimpse(Anda_puffins)
+### Data
+We start by looking into the example data attached to this package
+```{r example tracks}
+glimpse(example_tracks)
 ```
 ```{r,echo= F}
 # mean_smooths <- readRDS(here("data/RDS_files/mean_smooths.rds"))
@@ -49,14 +54,14 @@ In case different data is used, it needs the following columns:
 - latitude (numeric)
 
 In addition, a smoothing parameter (h) is required to determine the utilization distribution (using adehabitatHR::kernelUD()). For the SEATRACK species, individual-level h-parameters were determined based on location estimates from November-February. Next, the species-average was calculated (and saved in a tibble: mean_smooths). These species-means (`r species_smooths_string`) were then used for all individuals of the matching species.
-<br>
-<br>
+<br><br>
 
+### Selecting migratory tracks
 First, we'll have to identify which tracks we deem complete enough to get an accurate/representative sample of location estimates. We do that using KDE_filter_tracks_fun().
 This function will generate an output in a list that contains two elements: 1) A dataset containing all the tracks within the colony that meet the required number of locations to be assessed (default = 10 location estimates per month); 2) a vector with the names of the tracks that meet the requirements.
 ```{r Generating Tracks}
 Tracks <- ColonyRepr::KDE_filter_tracks_fun(
-      Anda_puffins, # This has to be a dataset filtered for your species-colony of interest.
+      example_tracks, # This has to be a dataset filtered for your species-colony of interest.
       month. = 12 # Let's focus on december for now
     )
 
@@ -65,12 +70,18 @@ names(Tracks)
 ```
 You'll find that <i>Tracks</i> (a list) contains two elements named <i>Dataset</i> and <i>Tracks</i>
 
-These elements contain the original dataset filtered for the tracks with sufficient data.
-```{r Tracks output}
-glimpse(Tracks$Dataset)
-Tracks$Tracks[1:5] # To provide an example
+These elements contain the original data set filtered for the tracks with sufficient data.
+```{r, echo = F}
+N_example_sample <- 5
 ```
 
+```{r Tracks output}
+glimpse(Tracks$Dataset)
+Tracks$Tracks[1:N_example_sample] # To provide an example
+```
+<br><br>
+
+### Utilization densities
 Now that we've established which tracks we want to assess, we can move on to determining utilization densities for the selected tracks.
 We do this using KDE_UD_fun(), which is essentially an altered version of adehabitatHR::kernelUD(). 
 
@@ -95,38 +106,67 @@ for (i in Tracks$Tracks[1:5]) # For this example we'll only do this for the firs
 ```
 KDE_UD_fun() returns a list with two elements: 1) an estUDm-object as produced by adehabitatHR::kernelUD() and 2) projection-string that was based on the individual tracking data.
 We'll use both these objects in the next step.
-<br>
-<br>
-Now we can use these track-level UDs to determine track-level kernel density contours, for any contour percentage we're interested in, e.g. 75%.
+<br><br>
+
+### Kernel density contours
+Now we can use these track-level UDs to determine track-level kernel density contours, for any contour percentage we're interested in, e.g. 50%.
 ```{r Kernel density contours}
-vertice_list <- lapply(UD_list, FUN = function(x) {
-        ColonyRepr::KDE_vertices_fun(
+contours_list <- lapply(UD_list, FUN = function(x) {
+        ColonyRepr::KDE_contours_fun(
           UD = x$UD,
           projection = x$projection,
-          percent = 75, # Set to contour value of interest
+          KDE_contour = 50, # Set to contour value of interest
           species_colony_data = Tracks$Dataset,
-          mean_smooths_per_species = mean_smooths
+          h_par
         )
       })
 ```
-KDE_vertices_fun() will return an sf-object with a (multi)polygon as geometry, capturing the area of the contour value of interest.
-```{r vertice_sf}
-vertice_list[[1]]
+`KDE_contours_fun()` will return an sf-object with a (multi)polygon as geometry, capturing the area of the contour value of interest.
+```{r contours_sf}
+contours_list[[1]]
 ```
 <br>
-At this point <i>vertice_list</i> contains separate sf-dataframes per track, which is not the format we can easily use in the next step. We'll thus apply bind_rows() to get all contour information into one sf-dataframe:
-```{r bind_rows(vertice_list)}
-vertices_all <- bind_rows(vertice_list)
-vertices_all
+At this point <i>contours_list</i> contains separate sf-dataframes per track, which is not the format we can easily use in the next step. We'll thus apply bind_rows() to get all contour information into one sf-dataframe:
+```{r bind_rows(contours_list)}
+contours_all <- bind_rows(contours_list)
+contours_all
+
+```
+<br><br>
+
+Let's quickly visualise what we've done so far.
+We'll take one of the assessed tracks and plot it on a map (dark points), including the kernel contour we've just created (blue polygon).
+```{r Contours on map, echo = F}
+ind_Year <- Tracks$Tracks[1]
+ind_proj <- UD_list[[ind_Year]]$projection
+
+Track_dat_proj <- Tracks$Dataset %>% 
+  filter(individ_Year == ind_Year) %>% 
+  sf::st_as_sf(coords = c('longitude', 'latitude'), crs = 4326) %>% 
+  sf::st_transform(crs = ind_proj)
+
+Contour_proj <- contours_all %>% 
+  filter(individ_Year == ind_Year) %>% 
+  st_transform(crs = ind_proj)
+
+Kernels_plot <- ggplot()+
+  geom_sf(data = Contour_proj, fill = "lightblue")+
+  geom_sf(data = Track_dat_proj, size = 1, alpha = 0.2)+
+  theme(legend.position = "none",
+        axis.text = element_blank())
+Kernels_plot
+
 
 ```
 
-This we can feed into the next function in our pipeline: KDE_combine_areas_fun().
-The function will iteratively overlay track-level contours onto the same map and calculate the area covered by the combined contours. It will start with just one contour (randomly selected) and iteratively increase the number of contours by 1 to a maximum of the total number of individuals tracked within the colony (from n=1 to n=max is one sequence). If an individual is tracked over multiple non-breeding seasons, only one track will be used in this procedure. Each new iteration within a sequence will contain the same information as used in the previous iteration, with the addition of a 'new' contour.  
+
+### Combining kernel areas
+We can feed these track-specific polygons into the next function in our pipeline: KDE_combine_areas_fun().
+The function will iteratively overlay track-level contours onto the same map and calculate the area covered by the combined contours. It will start with just one contour (randomly selected) and iteratively increase the number of contours by 1 to a maximum of the total number of individuals tracked within the colony (from n=1 to n=max is one sequence). If an individual is tracked over multiple non-breeding seasons, only one track will be used in this procedure. Each new iteration within a sequence will contain the same information as used in the previous iteration (i.e. track-contours used before will be used again), with the addition of a 'new' contour.  
 To perform this procedure, the function will take an sf-dataframe with track-level contours, as well as the dataset created by KDE_filter_tracks_fun(). It will use this dataset to determine an appropriate projection based on all available colony tracking data. As KDE_combine_areas_fun() will perform an iteration to minimize sampling bias, it also asks for an n_iterations argument (default = 20).
 ```{r KDE_combine_areas_fun}
 Combine <- ColonyRepr::KDE_combine_areas_fun(
-        vertices_sf = vertices_all,
+        contours_sf = contours_all,
         tot_loc_data = Tracks$Dataset,
         n_iterations = 20
       )
@@ -135,6 +175,60 @@ names(Combine)
 ```
 As you can see, KDE_combine_areas_fun() will return a list with two objects: 1) a dataframe with with the computed surface area (km2) per iteration (including additional necessary information), and 2) the (colony-appropriate) projection used to calculate the areas.
 <br>
+We can roughly visualise this iteration process for our example data as follows:
+```{r combining contours visualisation, echo = F}
+
+contours_fig <- contours_all %>% 
+  mutate(group = 5) %>% 
+  bind_rows(contours_all %>% 
+              slice_head(n = 4) %>% 
+              mutate(group = 4)
+  ) %>% 
+  bind_rows(contours_all %>% 
+              slice_head(n = 3) %>% 
+              mutate(group = 3)
+  ) %>% 
+  bind_rows(contours_all %>% 
+              slice_head(n = 2) %>% 
+              mutate(group = 2)
+  ) %>% 
+  bind_rows(contours_all %>% 
+              slice_head(n = 1) %>% 
+              mutate(group = 1)
+  ) %>% 
+  mutate(group = as.character(group)) %>% 
+  st_as_sf()
+
+contours_fig_areas <- contours_fig %>% 
+  st_make_valid() %>% 
+  group_by(group) %>% 
+  dplyr::summarise(geometry = st_union(geometry)) %>% 
+  mutate(area = units::set_units(st_area(geometry), km^2),
+         area = round(as.numeric(area),-2))
+
+strip_labels <- contours_fig_areas %>% 
+  dplyr::select(group, area) %>% 
+  mutate(area = paste0(group,')  Surface area = ' , area, ' km2')) %>% 
+  deframe()
+
+contours_fig %>% 
+  ggplot()+
+  geom_sf(fill = 'steelblue', alpha = 0.4)+
+  facet_wrap(~ group, labeller = labeller(group = strip_labels))+
+  theme(
+    axis.text = element_blank()
+  )
+
+
+
+```
+You can see that contours get added iteratively, and that a new surface area is calculated. Surface area is thus expected to increase with every added contour, but only if the new contour covers an area that hadn't been covered by the other contours yet. Otherwise, if no new area is covered, the surface area of all contours combined will not increase. For that reason, the increase in surface area in the last iteration is relatively small, since the new contour overlaps a lot with one of the contours that was already present.
+<br>
+In this visualisation, it also becomes clear that contour sizes differ among tracks, even though the same percentages were used to construct the contours (50% in our example). As such, differences in sizes arise from differences in movement behaviour during the assessed period (December in our example). Individuals that move around will get bigger contours compared to individuals that don't move as much. This is just good to be aware of.
+<br><br>
+
+
+### Estimating within-colony variation
 We can use the iteration-dataframe to first calculate a mean surface per N-contours included in the calculation (a summarised-dataframe). Then, we'll fit a Michaelis-Menten function to the N-contours vs mean surface area data. This can be done using KDE_saturation_curve_fun() as follows:
 ```{r KDE_saturation_curve_fun}
 Saturation_info <- KDE_saturation_curve(Combine$Kernel_areas)
@@ -142,13 +236,16 @@ class(Saturation_info)
 names(Saturation_info)
 
 ```
-This will create another list as output, containing 1) the original iteration-dataframe including parameter information from the best-fit MM-curve (provided in the columns <i>A_mean</i> and <i>B_mean</i>), and 2) the summarised-dataframe containing the same parameter information with the addition of representativeness per iteration (<i>Repr</i>) in an extra column. This is the ultimate value (as a percentage of the estimated total within-colony variation) we've been after throughout this analysis (Repr for n_inds == max(n_inds)). 
+This will create another list as output, containing 1) the original iteration-dataframe including parameter information from the best-fit MM-curve (provided in the columns <i>A_mean</i> and <i>B_mean</i>), and 2) the summarised-dataframe containing the same parameter information with the addition of representativeness per iteration (<i>Repr</i>) in an extra column. This is the ultimate value (as a percentage of the estimated total within-colony variation) we've been after throughout this analysis (<i>Repr</i> for <i>n_inds</i> == max(<i>n_inds</i>)). 
 ```{r}
 Saturation_info$Kernel_areas_summarised %>% 
   filter(n_inds == max(n_inds)) %>% 
   pull(Repr)
 ```
+<br><br>
 
+### Plotting the curve
+For the final step of this analysis, we can visualise the Michaelis-Menten curve fitted to our data:
 
 ```{r Plotting the curve, echo=F}
 n_ind <- max(Saturation_info$Kernel_areas_summarised$n_inds)
@@ -199,7 +296,7 @@ ggplot(Saturation_info$Kernel_areas_summarised, aes(x = n_inds, y = mean)) +
         axis.title.x = element_text(size = 22,margin = margin(t=8, b = 5)),
         axis.title.y.left = element_text(size = 22,margin = margin(r=8)),
         axis.title.y.right = element_text(size = 22,margin = margin(l=8)),
-        axis.text = element_text(size = 18),
+        axis.text = element_text(size = 15),
         legend.text = element_text(size=30),
         legend.title = element_blank(),
         strip.text = element_text(size = 16),
@@ -209,5 +306,80 @@ ggplot(Saturation_info$Kernel_areas_summarised, aes(x = n_inds, y = mean)) +
         legend.key.width = unit(0.5, units="cm"))+
   coord_cartesian(clip = "off")
 ```
+<br><br>
+In this worked out example we only used ´r N_example_sample´ tracks from our sample data. This is obviously not a lot of information, which results in low colony representativeness (and also high uncertainty as you'll see later). 
+<br> 
+A similar plot for a colony where many individuals have been tracked may look something like this:
+```{r full saturation curve, echo = F}
+saturation_curve_sum <- saturation_curve %>% 
+  group_by(species, colony, h_par, month, A_mean, B_mean, n_inds) %>%
+    dplyr::summarise(mean = mean(area),
+                     sd = sd(area)) %>%
+    mutate(up_bound = mean+sd,
+           low_bound = mean-sd)
+
+n_ind <- max(saturation_curve_sum$n_inds)
+A_mean <- unique(saturation_curve_sum$A_mean)
+B_mean <- unique(saturation_curve_sum$B_mean)
+
+MM_mean <- function(x) {A_mean*x/(B_mean+x)}
+
+y_95 = A_mean *0.95
+x_95 = y_95*B_mean/(A_mean-y_95)
+
+y_50 = A_mean *0.50
+x_50 = y_50*B_mean/(A_mean-y_50)
+
+higher_ind_or_x_95 <- max(n_ind, x_95)
+
+max_point <- saturation_curve_sum %>% 
+  arrange(desc(n_inds)) %>% 
+  slice_head(n=1) %>% 
+  pull(mean)
+
+max_percent <- round(100/A_mean*max_point,0)
+perc_lines_col <- "grey70"
+
+saturation_curve_sum %>% 
+  ggplot(aes(x = n_inds, y = mean)) +
+  geom_segment(y = y_95, x = 1, xend = x_95, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  stat_function(fun = MM_mean, col = "tomato", linetype = "dashed", lwd = 2)+
+  geom_point(size = 3, shape = 21, fill = "grey20", col = "black", alpha =0.8)+
+  geom_hline(yintercept = A_mean, linetype = "dotted")+
+  geom_text(x = x_95*0.25, y = A_mean*1.03, label = "Estimated within-colony variation", col = "grey40", size = 5)+
+  geom_segment(y = -1, x = x_95, yend = y_95, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  # geom_point(x = x_95, y = y_95, size = 3, col = perc_lines_col)+
+  geom_text(x = 0, y = y_95-A_mean/100*3, label = "95%", col = perc_lines_col, size = 5)+
+  geom_segment(y = y_50, x = 1, xend = x_50, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  geom_segment(y = -1, x = x_50, yend = y_50, col = perc_lines_col, linetype = "dashed", lwd = 1)+
+  geom_point(x = x_50, y = y_50, size = 4, shape = 21, fill = perc_lines_col, col = "black")+
+  geom_text(x = 0, y = y_50+A_mean/100*3, label = "50%", col = perc_lines_col, nudge_y = 1500, size = 5)+
+  # geom_text(x = B_mean+0.02*x_95, y = A_mean*0.035, label = ceiling(B_mean), col = perc_lines_col, size = 5)+
+  labs(y = "Colony representativeness (%)",
+       x = "Number of tracked individuals")+
+  scale_y_continuous(breaks = seq(from = 0, to = A_mean, length.out = 5),
+                     labels = seq(from = 0, to = 100, by = 25))+
+  scale_x_continuous(
+    limits = c(0, round(higher_ind_or_x_95+5,-1)))+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 20, margin = margin(b=20)),
+        plot.subtitle = element_text(size = 20),
+        axis.title.x = element_text(size = 22,margin = margin(t=8, b = 5)),
+        axis.title.y.left = element_text(size = 22,margin = margin(r=8)),
+        axis.title.y.right = element_text(size = 22,margin = margin(l=8)),
+        axis.text = element_text(size = 15),
+        legend.text = element_text(size=30),
+        legend.title = element_blank(),
+        strip.text = element_text(size = 16),
+        legend.position = "none",
+        plot.title.position = "plot",
+        plot.background = element_rect(fill = "white", color = "white"),
+        legend.key.width = unit(0.5, units="cm"))+
+  coord_cartesian(clip = "off")
+```
+Now, since the Michaelis-Menten curve is fitted to a much higher number of data points, it seems intuitive that the uncertainty around that fit is much lower compared to our initial fit. In the next vignette, we'll explore how we can get a better understanding of that uncertainty.
+
+<br><br>
+
 
 

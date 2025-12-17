@@ -1,6 +1,6 @@
 #' Function to determine representativeness of data collected up to and including certain retrieval years.
 #'
-#' @param vertices_sf An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage
+#' @param contours_sf An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage
 #' @param n_iterations How many iterations should be used in the area-combining process
 #'
 #' @returns A tibble containing estimated representativeness after including data from a given retrieval year, thus assessing all data collected up to that point.
@@ -8,22 +8,22 @@
 #'
 #' @import dplyr
 #' @import sf
-KDE_repr_per_retrieval_year <- function(vertices_sf,
+KDE_repr_per_retrieval_year <- function(contours_sf,
          n_iterations = 20
 ){
-  species <- unique(vertices_sf$species)
-  colony <- unique(vertices_sf$colony)
-  month <- unique(vertices_sf$month)
-  percentage <- unique(vertices_sf$perc)
+  species <- unique(contours_sf$species)
+  colony <- unique(contours_sf$colony)
+  month <- unique(contours_sf$month)
+  KDE_contour <- unique(contours_sf$KDE_contour)
 
 
 
-  individual_migrations <- vertices_sf %>%
+  individual_migrations <- contours_sf %>%
     as_tibble() %>%
     distinct(individ_Year) %>%
     pull()
 
-  n_individuals <- vertices_sf %>%
+  n_individuals <- contours_sf %>%
     as_tibble() %>%
     distinct(individ_id) %>%
     nrow()
@@ -44,15 +44,16 @@ KDE_repr_per_retrieval_year <- function(vertices_sf,
       dplyr::filter(retrieval_year <= y) %>%
       pull(individ_Year)
 
-    retrieved_vertices <- Colony_vertices %>%
+    retrieved_contours <- contours_sf %>%
+      as_tibble() %>%
       dplyr::filter(individ_Year %in% retrieved_tracks)
 
-    n_individuals_included <- retrieved_vertices %>%
+    n_individuals_included <- retrieved_contours %>%
       as_tibble() %>%
       distinct(individ_id) %>%
       nrow()
 
-    Combine <- KDE_combine_areas_fun(vertices_sf = retrieved_vertices,
+    Combine <- KDE_combine_areas_fun(contours_sf = retrieved_contours,
                                      tot_loc_data = SEATRACK_tot,
                                      n_iterations = 20)
 
@@ -65,7 +66,7 @@ KDE_repr_per_retrieval_year <- function(vertices_sf,
                        "colony" = colony,
                        "retrieval_year" = y,
                        "n_individuals" = n_individuals_included,
-                       "perc" = p2,
+                       "KDE_contour" = p2,
                        "Repr" = Repr_perc
       ))
   }
