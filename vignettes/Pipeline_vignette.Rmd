@@ -72,12 +72,12 @@ You'll find that <i>Tracks</i> (a list) contains two elements named <i>Dataset</
 
 These elements contain the original data set filtered for the tracks with sufficient data.
 ```{r, echo = F}
-N_example_sample <- 5
+N_example_sample <- length(Tracks$Tracks)
 ```
 
 ```{r Tracks output}
 glimpse(Tracks$Dataset)
-Tracks$Tracks[1:N_example_sample] # To provide an example
+Example_track_ids <- Tracks$Tracks[1:N_example_sample] # To provide an example
 ```
 <br><br>
 
@@ -95,8 +95,7 @@ h_par <- mean_smooths %>%
   pull(mean_h)
 
 # We iterate over the selected tracks to determine individual-level UDs and store these in UD_list
-for (i in Tracks$Tracks[1:5]) # For this example we'll only do this for the first five tracks 
-  {
+for (i in Example_track_ids){ # For this example we'll only do this for the first five tracks 
   UD_list[[i]] <- ColonyRepr::KDE_UD_fun(
     Tracks$Dataset %>% filter(individ_Year == i),
     h_par
@@ -132,6 +131,10 @@ contours_all <- bind_rows(contours_list)
 contours_all
 
 ```
+```{r save contours_all, echo = F}
+usethis::use_data(contours_all, overwrite = T)
+```
+
 <br><br>
 
 Let's quickly visualise what we've done so far.
@@ -173,6 +176,10 @@ Combine <- ColonyRepr::KDE_combine_areas_fun(
 class(Combine)
 names(Combine)
 ```
+```{r save Combine, echo = F}
+usethis::use_data(Combine, overwrite = T)
+```
+
 As you can see, KDE_combine_areas_fun() will return a list with two objects: 1) a dataframe with with the computed surface area (km2) per iteration (including additional necessary information), and 2) the (colony-appropriate) projection used to calculate the areas.
 <br>
 We can roughly visualise this iteration process for our example data as follows:

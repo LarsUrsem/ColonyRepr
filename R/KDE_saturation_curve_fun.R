@@ -19,7 +19,7 @@ KDE_saturation_curve <- function(Kernel_areas
   colony <- unique(Kernel_areas$colony)
   month <- unique(Kernel_areas$month)
   h_par <- unique(Kernel_areas$h_par)
-  perc <- unique(Kernel_areas$perc)
+  KDE_contour <- unique(Kernel_areas$KDE_contour)
 
   col_dat_sum <- Kernel_areas %>%
     group_by(species, colony, h_par, month, n_inds) %>%
@@ -53,7 +53,7 @@ KDE_saturation_curve <- function(Kernel_areas
   })
 
   if (inherits(nls_mean, "numeric")){
-    print(paste("FAILED TO CONVERGE: ",species, colony, perc,"KDE", sep = " - "))
+    print(paste("FAILED TO CONVERGE: ",species, colony, KDE_contour,"KDE", sep = " - "))
 
     Kernel_areas <- Kernel_areas %>%
       mutate("h_par" = h_par,
@@ -63,7 +63,7 @@ KDE_saturation_curve <- function(Kernel_areas
 
     col_dat_sum <- col_dat_sum %>%
       mutate("h_par" = h_par,
-             "KDE_contour" = perc,
+             "KDE_contour" = KDE_contour,
              "A_mean" = NA,
              "B_mean" = NA,
              Repr = NA)
@@ -79,7 +79,7 @@ KDE_saturation_curve <- function(Kernel_areas
 
     col_dat_sum <- col_dat_sum %>%
       mutate("h_par" = h_par,
-             "KDE_contour" = perc,
+             "KDE_contour" = KDE_contour,
              "A_mean" = A_mean,
              "B_mean" = B_mean,
              Repr = 100/A_mean * mean)

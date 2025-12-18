@@ -4,7 +4,12 @@
 \alias{KDE_combine_areas_fun}
 \title{Function to iteratively combine individual-level kernels to estimate within-colony variation}
 \usage{
-KDE_combine_areas_fun(contours_sf, tot_loc_data, n_iterations = 20)
+KDE_combine_areas_fun(
+  contours_sf,
+  tot_loc_data,
+  colony_projection = NULL,
+  n_iterations = 20
+)
 }
 \arguments{
 \item{contours_sf}{An sf-object with individual-level kernels already filtered for a desired KDE contour percentage}

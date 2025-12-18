@@ -15,6 +15,7 @@
 #' @import sf
 KDE_combine_areas_fun <- function(contours_sf,
                                   tot_loc_data, #Needed to determine and use appropriate projection for area calculations
+                                  colony_projection = NULL,
                                   n_iterations = 20
 ){
   # Extract basic information
@@ -34,6 +35,9 @@ KDE_combine_areas_fun <- function(contours_sf,
     distinct(individ_id) %>%
     nrow()
 
+
+  # if no colony projection is provided we have to determine it:
+  if(is.null(colony_projection)){
   # Filter for the assessed tracks. To be used in calculating an appropriate projection (next step)
   colony_dat <- tot_loc_data %>%
     dplyr::filter(individ_Year %in% individual_migrations,
@@ -46,7 +50,8 @@ KDE_combine_areas_fun <- function(contours_sf,
                                 " +lat_0=",
                                 mean(colony_dat$latitude),
                                 " +units=km"
-  )
+  )}
+  else{colony_proj.laea <- colony_projection}
 
   # Which kernel contour was used?
   percentage <- contours_sf %>%

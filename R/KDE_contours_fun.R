@@ -26,7 +26,7 @@ KDE_contours_fun <- function(UD,
     as_tibble() %>%
     rename(individ_Year = id) %>% # Let's rename according to our original data
     left_join(species_colony_data %>%
-                distinct(species, colony, individ_id, individ_Year, W_Year, month),
+                distinct(species, colony, individ_id, individ_Year, W_Year, month, retrieval_year),
               by = "individ_Year") %>% # Include track information
     st_as_sf() %>%
     st_transform(crs = projection) %>% # Set the track-appropriate projection to later calculate surface area

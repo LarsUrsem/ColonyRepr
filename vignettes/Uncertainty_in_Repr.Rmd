@@ -31,12 +31,47 @@ Let's describe an example. You have tracked 20 individuals from a certain colony
 <br>
 In the following analysis, we will investigate how a fitted Michaelis-Menten curve changes as the sample size of tracked individuals increases. For all fitted MM-curves, we can then determine how many individuals (n_to_track) we'd need to track to achieve a certain level of colony representativeness, in our case 50%.
 If all fitted curves are very similar, n_to_track will not differ a lot among the different fits, indicating a robust fitting process. However, as we'll see, the fitting is not always as robust. 
+<br>
+<br>
+We can fit a MM-curve to all possible sample sizes (>5) within our colony sample using `KDE_Repr_per_individual_fun`.
+
+```{r, Repr per individual}
+Repr_per_ind <- KDE_repr_per_individual_fun(combined_areas_df = Combine$Kernel_areas)
+Repr_per_ind
+```
+As this example only contains a very small number of tracks, we can only really use it to show how to run `KDE_Repr_per_individual_fun` and what the function returns.
+However, if we'd performed a similar approach on a data set with many more tracked individuals and retrieval dates, we could use the output to gain insight into uncertainty of the model MM-fit.
+We'll show this next.
+
+
+```{r, sens-data}
+glimpse(Sens_MM)
+
+```
+
+Let's determine how much colony representativeness 100 tracked individuals would yield, per fitted MM-curve (retrieval year specific).
+```{r, Repr_50}
+Sens_MM_100 <- Sens_MM %>% 
+  mutate(Repr_100ind = 100/A_mean * (A_mean*100/(B_mean+100)))
+Sens_MM_100 %>% 
+  ggplot(aes(x = n_inds, y = Repr_100ind))+
+  geom_point()
+```
+You can clearly see that the amount of within-colony variation captured by 100 tracked individuals differs among the fitted curves. Especially at low sample sizes, the variation is huge and problematic. As sample size increases, expected representativeness captured by 100 individuals seems to stabalize, which indicates lower uncertainty of any inference made from these curves fitted at higher sample sizes.
+<br> 
+Whether or not you've reached this stabilized stage depends on your study system but is good to check using `KDE_Repr_per_individual_fun`.
 
 
 
 
+## Repr per retrieval year
+```{r, Repr per retrieval year}
+KDE_repr_per_retrieval_year_fun(contours_all,
+                                colony_projection = Combine$colony_projection,
+                                n_iterations = 5)
 
 
+```
 
 
 
@@ -50,5 +85,4 @@ If all fitted curves are very similar, n_to_track will not differ a lot among th
 
 Topics to include:
 
-- Repr over retrieval years
 - Sensitivity to h-parameter

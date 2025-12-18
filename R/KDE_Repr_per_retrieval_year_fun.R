@@ -1,6 +1,6 @@
 #' Function to determine representativeness of data collected up to and including certain retrieval years.
 #'
-#' @param contours_sf An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage
+#' @param contours_sf An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage. contours_sf should also contain a column indicating retrieval year
 #' @param n_iterations How many iterations should be used in the area-combining process
 #'
 #' @returns A tibble containing estimated representativeness after including data from a given retrieval year, thus assessing all data collected up to that point.
@@ -8,8 +8,9 @@
 #'
 #' @import dplyr
 #' @import sf
-KDE_repr_per_retrieval_year <- function(contours_sf,
-         n_iterations = 20
+KDE_repr_per_retrieval_year_fun <- function(contours_sf,
+                                        colony_projection,
+                                        n_iterations = 20
 ){
   species <- unique(contours_sf$species)
   colony <- unique(contours_sf$colony)
@@ -29,7 +30,8 @@ KDE_repr_per_retrieval_year <- function(contours_sf,
     nrow()
 
 
-  retrieval_groups <- colony_dat %>%
+  retrieval_groups <- contours_sf %>%
+    as_tibble() %>%
     distinct(retrieval_year, individ_Year) %>%
     arrange(retrieval_year)
 
@@ -53,22 +55,22 @@ KDE_repr_per_retrieval_year <- function(contours_sf,
       distinct(individ_id) %>%
       nrow()
 
-    Combine <- KDE_combine_areas_fun(contours_sf = retrieved_contours,
-                                     tot_loc_data = SEATRACK_tot,
+    retrieved_contours_sf <- retrieved_contours %>%
+      st_as_sf()
+
+    Combine <- KDE_combine_areas_fun(contours_sf = retrieved_contours_sf,
+                                     colony_projection = colony_projection,
                                      n_iterations = 20)
 
     Repr <- KDE_saturation_curve(Combine$Kernel_areas)
-    Repr_perc <- Repr$Kernel_areas_summarised %>%
+    x <- Repr$Kernel_areas_summarised %>%
       dplyr::filter(n_inds == max(n_inds)) %>%
-      pull(prop_of_100perc)
+      mutate(retrieval_year = y,
+             "KDE_contour" = KDE_contour
+      ) %>%
+      dplyr::select(species, colony, retrieval_year, n_inds, KDE_contour, mean, A_mean, B_mean, Repr)
     Year_Repr <- Year_Repr %>%
-      bind_rows(tibble("species" = species,
-                       "colony" = colony,
-                       "retrieval_year" = y,
-                       "n_individuals" = n_individuals_included,
-                       "KDE_contour" = p2,
-                       "Repr" = Repr_perc
-      ))
+      bind_rows(x)
   }
 
   return(Year_Repr)
