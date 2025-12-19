@@ -131,9 +131,6 @@ contours_all <- bind_rows(contours_list)
 contours_all
 
 ```
-```{r save contours_all, echo = F}
-usethis::use_data(contours_all, overwrite = T)
-```
 
 <br><br>
 
@@ -175,9 +172,6 @@ Combine <- ColonyRepr::KDE_combine_areas_fun(
       )
 class(Combine)
 names(Combine)
-```
-```{r save Combine, echo = F}
-usethis::use_data(Combine, overwrite = T)
 ```
 
 As you can see, KDE_combine_areas_fun() will return a list with two objects: 1) a dataframe with with the computed surface area (km2) per iteration (including additional necessary information), and 2) the (colony-appropriate) projection used to calculate the areas.

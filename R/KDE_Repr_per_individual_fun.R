@@ -4,6 +4,7 @@
 #'
 #' @returns A tibble containing estimated representativeness after including data from a given retrieval year, thus assessing all data collected up to that point.
 #' @export
+#' @keywords internal
 #'
 #' @import dplyr
 #' @import sf
@@ -55,7 +56,7 @@ KDE_repr_per_individual_fun <- function(combined_areas_df){
 
       col_dat_sum_N <- col_dat_sum %>%
         dplyr::filter(n_inds == n) %>%
-        mutate("h_par" = h_par,
+        mutate(#"h_par" = h_par,
                "KDE_contour" = perc,
                "A_mean" = NA,
                "B_mean" = NA,
@@ -66,7 +67,7 @@ KDE_repr_per_individual_fun <- function(combined_areas_df){
 
       col_dat_sum_N <- col_dat_sum_n %>%
         dplyr::filter(n_inds == n) %>%
-        mutate("h_par" = h_par,
+        mutate(#"h_par" = h_par,
                "KDE_contour" = KDE_contour,
                "A_mean" = A_mean_n,
                "B_mean" = B_mean_n,

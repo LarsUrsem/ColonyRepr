@@ -101,3 +101,37 @@
 #'   \item{PN_prop_missing}{}
 #' }
 "species_curves_tot_PN"
+
+
+#' Data set with all contours of the example tracks
+#'
+#' Created and used in the vignettes
+#'
+#' @format ...
+#' \describe{
+#'   \item{species}{}
+#'   \item{colony}{}
+#'   \item{individ_id}{}
+#'   \item{KDE_contour}{}
+#'   \item{month}{}
+#'   \item{individ_Year}{}
+#'   \item{area_km2}{}
+#'   \item{geometry}{}
+#'   \item{W_Year}{}
+#'   \item{retrieval_year}{}
+#'   \item{h_par}{}
+#' }
+"contours_all"
+
+
+
+#' Example output from `KDE_combine_areas_fun()`
+#'
+#' Created and used in the vignettes
+#'
+#' @format ...
+#' \describe{
+#'   \item{list}{}
+#'
+#' }
+"Combine"
