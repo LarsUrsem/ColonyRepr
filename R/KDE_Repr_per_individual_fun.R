@@ -15,7 +15,7 @@ KDE_repr_per_individual_fun <- function(combined_areas_df){
   KDE_contour <- unique(combined_areas_df$KDE_contour)
 
   col_dat_sum <- combined_areas_df %>%
-    group_by(n_inds) %>%
+    group_by(species, colony, month, n_inds) %>%
     dplyr::summarise(mean = mean(area),
                      sd = sd(area)) %>%
     mutate(up_bound = mean+sd,
@@ -51,13 +51,13 @@ KDE_repr_per_individual_fun <- function(combined_areas_df){
     })
 
     if(inherits(nls_mean, "numeric")){
-      print(paste("FAILED TO CONVERGE: ",s4, Colony4, p3,"KDE", sep = " - "))
+      print(paste("FAILED TO CONVERGE: ",species, colony, KDE_contour,"KDE", sep = " - "))
 
 
       col_dat_sum_N <- col_dat_sum %>%
         dplyr::filter(n_inds == n) %>%
         mutate(#"h_par" = h_par,
-               "KDE_contour" = perc,
+               "KDE_contour" = KDE_contour,
                "A_mean" = NA,
                "B_mean" = NA,
                Repr = NA)
