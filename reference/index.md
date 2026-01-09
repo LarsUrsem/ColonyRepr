@@ -1,0 +1,43 @@
+# Package index
+
+## Functions
+
+The functions within the ColonyRepr package
+
+- [`KDE_UD_fun()`](https://larsursem.github.io/ColonyRepr/reference/KDE_UD_fun.md)
+  : Determine Utilization Density
+- [`KDE_combine_areas_fun()`](https://larsursem.github.io/ColonyRepr/reference/KDE_combine_areas_fun.md)
+  : Function to iteratively combine individual-level kernels to estimate
+  within-colony variation
+- [`KDE_contours_fun()`](https://larsursem.github.io/ColonyRepr/reference/KDE_contours_fun.md)
+  : Extract kernel vertices from UD-object
+- [`KDE_filter_tracks_fun()`](https://larsursem.github.io/ColonyRepr/reference/KDE_filter_tracks_fun.md)
+  : Filter for tracks with sufficient location estimates
+- [`KDE_repr_per_retrieval_year_fun()`](https://larsursem.github.io/ColonyRepr/reference/KDE_repr_per_retrieval_year_fun.md)
+  : Function to determine representativeness of data collected up to and
+  including certain retrieval years.
+- [`KDE_saturation_curve()`](https://larsursem.github.io/ColonyRepr/reference/KDE_saturation_curve.md)
+  : Fit saturation curve model to combined areas
+
+## Package data
+
+Data that is used in the package vignettes
+
+- [`Combine`](https://larsursem.github.io/ColonyRepr/reference/Combine.md)
+  : Example output from \`KDE_combine_areas_fun()\`
+- [`Sens_MM`](https://larsursem.github.io/ColonyRepr/reference/Sens_MM.md)
+  : Example data to assess uncertainty of the estimated colony
+  representativeness
+- [`contours_all`](https://larsursem.github.io/ColonyRepr/reference/contours_all.md)
+  : Data set with all contours of the example tracks
+- [`example_tracks`](https://larsursem.github.io/ColonyRepr/reference/example_tracks.md)
+  : Individual example tracks
+- [`mean_smooths`](https://larsursem.github.io/ColonyRepr/reference/mean_smooths.md)
+  : Species specific smoothing parameters
+- [`retrieval_year_repr`](https://larsursem.github.io/ColonyRepr/reference/retrieval_year_repr.md)
+  : Example output from \`KDE_Repr_per_retrieval_year()\`
+- [`saturation_curve`](https://larsursem.github.io/ColonyRepr/reference/saturation_curve.md)
+  : Example data as would be returned from
+  \`KDE_saturation_curve_fun()\`
+- [`species_curves_tot_PN`](https://larsursem.github.io/ColonyRepr/reference/species_curves_tot_PN.md)
+  : Mutli-species data set for a grouped analysis
