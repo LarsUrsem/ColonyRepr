@@ -20,7 +20,6 @@ knitr::opts_chunk$set(
 
 ```{r setup,eval=TRUE, warning=FALSE, message=F}
 library(ColonyRepr)
-library(here)
 library(tidyverse)
 library(sf)
 library(units)
