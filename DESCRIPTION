@@ -20,7 +20,8 @@ Imports:
         magrittr,
         sf,
         sp,
-        adehabitatHR
+        adehabitatHR,
+        slider
 RoxygenNote: 7.3.3
 Suggests: 
     knitr,

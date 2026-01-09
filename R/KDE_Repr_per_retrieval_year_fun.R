@@ -2,6 +2,7 @@
 #'
 #' @param contours_sf An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage. contours_sf should also contain a column indicating retrieval year
 #' @param n_iterations How many iterations should be used in the area-combining process
+#' @param colony_projection Provide a projection that is appropriate for the whole colony
 #'
 #' @returns A tibble containing estimated representativeness after including data from a given retrieval year, thus assessing all data collected up to that point.
 #' @export

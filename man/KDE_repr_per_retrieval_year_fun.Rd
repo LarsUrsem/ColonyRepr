@@ -13,6 +13,8 @@ KDE_repr_per_retrieval_year_fun(
 \arguments{
 \item{contours_sf}{An sf-object with individual-level kernels for a single species-colony already filtered for a desired KDE contour percentage. contours_sf should also contain a column indicating retrieval year}
 
+\item{colony_projection}{Provide a projection that is appropriate for the whole colony}
+
 \item{n_iterations}{How many iterations should be used in the area-combining process}
 }
 \value{

@@ -135,3 +135,17 @@
 #'
 #' }
 "Combine"
+
+
+
+#' Example output from `KDE_Repr_per_retrieval_year()`
+#'
+#' Used in the vignettes
+#'
+#' @format ...
+#' \describe{
+#'   \item{XXX}{}
+#'
+#' }
+
+"retrieval_year_repr"

@@ -16,6 +16,8 @@ KDE_combine_areas_fun(
 
 \item{tot_loc_data}{A dataframe with species-colony location information}
 
+\item{colony_projection}{(Optional) Provide a projection that is appropriate for the whole colony}
+
 \item{n_iterations}{Set how many iterations you'd like to use}
 }
 \value{

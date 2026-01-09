@@ -2,6 +2,7 @@
 #'
 #' @param contours_sf An sf-object with individual-level kernels already filtered for a desired KDE contour percentage
 #' @param tot_loc_data A dataframe with species-colony location information
+#' @param colony_projection (Optional) Provide a projection that is appropriate for the whole colony
 #' @param n_iterations Set how many iterations you'd like to use
 #'
 #' @return A list containing:

@@ -61,19 +61,109 @@ You can clearly see that the amount of within-colony variation captured by 100 t
 <br> 
 Whether or not you've reached this stabilized stage depends on your study system but is good to check using `KDE_Repr_per_individual_fun`.
 
+<br>
+We can define some rules to determine the uncertainty of these and other assessed colonies:
+```{r uncertainty rules}
+library(slider)
+N_last_points_assessed <- 10
+
+Sens_MM_100_unc <- Sens_MM_100 %>% 
+  group_by(species, colony,KDE_contour) %>% 
+  mutate(diff = abs(Repr_100ind-lag(Repr_100ind))) %>% 
+  dplyr::arrange(species, colony, KDE_contour, desc(n_inds)) %>% 
+  group_by(species, colony, KDE_contour) %>% 
+  mutate(moving_cumsum = slide_dbl(diff, sum,.complete = T, .after = N_last_points_assessed-1)) %>% 
+  arrange(species, colony, desc(n_inds)) %>% 
+  mutate(tot_cumsum = cumsum(diff),
+         uncertainty = case_when(n_inds <= 15 ~ "high",
+                                 moving_cumsum <= 5 ~ "low",
+                                 moving_cumsum >  5 & moving_cumsum <=15 ~ "medium",
+                                 moving_cumsum >  15 ~ "high",
+                                 is.na(moving_cumsum) ~ "high"),
+         uncertainty_is_medium = uncertainty == "medium",
+         uncertainty_is_high = uncertainty == "high") %>% 
+  # group_by(species, colony) %>% 
+  mutate(
+    # cumsum_medium = cumsum(uncertainty_is_medium),
+    # cumsum_high = cumsum(uncertainty_is_high),
+    # uncertainty = case_when(uncertainty == "low" & cumsum_medium >0 ~ "medium",
+    #                         uncertainty == "medium" & cumsum_high >0 ~ "high",
+    #                         T ~ uncertainty),
+    uncertainty = factor(uncertainty, levels = c("high","medium","low"))
+         )
+
+unc_cols <- c("high" = "#ff9966", "medium" = "#FFFF00", "low" = "#66cc00")
+uncertainty_fill <- scale_fill_manual(values = unc_cols, name = "Uncertainty category")
 
 
-
-## Repr per retrieval year
-```{r, Repr per retrieval year}
-KDE_repr_per_retrieval_year_fun(contours_all,
-                                colony_projection = Combine$colony_projection,
-                                n_iterations = 5)
+Sens_MM_100_unc %>% 
+  ggplot(aes(x = n_inds, y = Repr_100ind, fill = uncertainty))+
+  geom_point(shape = 21)+
+  uncertainty_fill
 
 
 ```
+You can see that the initially the Repr estimates are with high uncertainty and that this stabalizes to medium uncertainty at a sample size of 31 and than later to low uncertainty at 36. However, at a sample size of 50 the cumulative difference with the previous ten points just exceeds 5, giving this point a medium uncertainty level.
+Given this new information, we can no longer say that some of the estimates based on lower sample sizes have low uncertainty. We thus have to add another condition, changing low uncertainty levels to medium if a higher sample size obtains a medium uncertainty. We should do the same for medium uncertainties when higher sample sizes obtain a high uncertainty.
+
+```{r complete uncertainty}
+Sens_MM_100_unc_complete <- Sens_MM_100_unc %>% 
+  mutate(
+    cumsum_medium = cumsum(uncertainty_is_medium),
+    cumsum_high = cumsum(uncertainty_is_high),
+    uncertainty = case_when(uncertainty == "low" & cumsum_medium >0 ~ "medium",
+                            uncertainty == "medium" & cumsum_high >0 ~ "high",
+                            T ~ uncertainty),
+    uncertainty = factor(uncertainty, levels = c("high","medium","low"))
+  )
+
+Sens_MM_100_unc_complete %>% 
+  ggplot(aes(x = n_inds, y = Repr_100ind, fill = uncertainty))+
+  geom_point(shape = 21)+
+  uncertainty_fill
+
+```
+
+<br><br>
 
 
+
+### Retrieval year vs Repr
+
+We can also see how much extra information we collected per retrieval year.
+
+```{r retrieval_year_repr}
+
+KDE_repr_per_retrieval_year_fun(contours_all,
+                                Combine$colony_projection)
+
+```
+When running this for a complete colony (e.g. the kittiwakes from Sklinna) you can create plots like the following:
+
+```{r retrieval_year_repr 2, echo = F}
+
+unc_cols <- c("high" = "#ff9966", "medium" = "#FFFF00", "low" = "#66cc00")
+uncertainty_fill <- scale_fill_manual(values = unc_cols, name = "Uncertainty category")
+
+retrieval_year_repr %>% 
+  mutate(uncertainty = case_when(is.na(uncertainty) ~ "high",
+                                 uncertainty == 'mid' ~ 'medium',
+                                 T ~ uncertainty),
+         uncertainty = factor(uncertainty, levels = c("high","medium","low")),
+         retrieval_year = str_replace(retrieval_year,pattern = "20",replacement = r"(')")) %>% 
+  ggplot(aes(x = n_individuals, y = Repr))+
+  geom_line(inherit.aes = F, aes(x = n_individuals, y = Repr))+
+  geom_point(shape = 21, size = 3, aes(fill = uncertainty))+
+  # ggrepel::geom_text_repel(aes(label = retrieval_year, y = Repr),size = 3)+
+  geom_text(aes(label = retrieval_year, y = Repr), size = 3, hjust = 1, vjust = -1)+
+  labs(y = "Colony representativeness (%)")+
+  uncertainty_fill+
+  facet_wrap(~colony, scales = "free")+
+  coord_cartesian(clip = "off")
+
+  
+```
+Here we can see that uncertainty decreases as the sample size increases (see change in point color). Also, we can see that over the years we've increased our understanding of what happens at a colony scale, as representativeness keeps on increasing. However, we can also see that this increase in representativeness did not increase that much anymore after 2021, even though we've collected tracking data of an additional 15-20 individuals.
 
 
 
