@@ -30,7 +30,8 @@ Suggests:
     units,
     rlang,
     ggridges,
-    tidyverse
+    tidyverse,
+    here
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5)
