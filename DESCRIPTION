@@ -11,7 +11,7 @@ Authors@R: c(
   )
 Description: More about what it does (maybe more than one line).
     Continuation lines should be indented.
-URL: https://LarsUrsem.github.io/ColonyRepr, https://larsursem.github.io/ColonyRepr/
+URL: https://larsursem.github.io/ColonyRepr/
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
