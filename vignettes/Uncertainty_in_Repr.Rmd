@@ -1,5 +1,5 @@
 ---
-title: "Uncertainty_in_Repr"
+title: "Uncertainty in estimating colony representativeness"
 author: "Lars Ursem"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -18,13 +18,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, warning=FALSE, message=F}
 library(ColonyRepr)
 library(tidyverse)
 ```
-.
 
-### Determining uncertainty
 In determining colony representativeness, we assume that the fitted MM-curve accurately describes the trajectory of increasing the number of tracked individuals over time. Since we make an estimate of the expected within-colony variation directly based on the parameter-values from the fitted MM-curve, which we then use to determine captured colony representativeness, the robustness of the MM-fit will directly influence the uncertainty around our calculated estimate of colony representativeness. 
 Let's describe an example. You have tracked 20 individuals from a certain colony and performed the analysis described above. The MM-curve is now fitted to 20 data points. The next year, you track another individual and add this to your dataset. Now, you'll fit the curve to 21 data points. Ideally, the parameters of the curve wouldn't change. However, this is not the case, as the new information will influence the fit. Consequently, you'll extract different parameter values from your second fit compared to your first fit. If these values are similar to the ones from your first fit, great! Your estimated colony representativeness will increase as predicted with the addition of this extra individual. However, if the parameter values of the second fit differ a lot from those of your first fit, your estimate of captured colony representativeness will vary accordingly. You can assume that your second calculation is closer to the truth, but you don't know how close. 
 <br>

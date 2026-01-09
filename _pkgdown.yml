@@ -12,11 +12,26 @@ reference:
       - has_concept("Data")
 articles:
   - title: Getting started
+    # navbar: Getting started
     contents:
       - Pipeline_vignette
   - title: Uncertainty
+    # navbar: Uncertainty
     contents:
       - Uncertainty_in_Repr
   - title: Multi-colony analysis
+    # navbar: Multi-colony analysis
     contents:
       - Grouped
+
+navbar:
+  components:
+    articles:
+      text: Vignettes # the name of the tab
+      menu:
+        - text: "Getting started"
+          href: articles/Pipeline_vignette.html
+        - text: "Uncertainty in estimates"
+          href: articles/Uncertainty_in_Repr.html
+        - text: "Multi-colony analysis"
+          href: articles/Grouped.html

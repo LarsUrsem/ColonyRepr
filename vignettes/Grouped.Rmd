@@ -1,5 +1,5 @@
 ---
-title: "Grouped analysis SEATRACK"
+title: "Multi-colony analysis SEATRACK"
 author: "Lars Ursem"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
