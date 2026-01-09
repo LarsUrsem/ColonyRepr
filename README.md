@@ -1,6 +1,6 @@
 ## Overview
 ColonyRepr is a package focussed on using animal tracking data from a subsample of a study population to gain insight into population (or colony) representativeness.
-Methods were initially developed for internal use within the [SEATRACK program](seatrack.net)
+Methods were initially developed for internal use within the [SEATRACK program](https://seatrack.net/)
 
 ## Installation
 ```
