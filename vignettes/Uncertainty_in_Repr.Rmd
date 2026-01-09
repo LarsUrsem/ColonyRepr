@@ -23,7 +23,7 @@ library(ColonyRepr)
 library(here)
 library(tidyverse)
 ```
-
+.
 
 ### Determining uncertainty
 In determining colony representativeness, we assume that the fitted MM-curve accurately describes the trajectory of increasing the number of tracked individuals over time. Since we make an estimate of the expected within-colony variation directly based on the parameter-values from the fitted MM-curve, which we then use to determine captured colony representativeness, the robustness of the MM-fit will directly influence the uncertainty around our calculated estimate of colony representativeness. 
