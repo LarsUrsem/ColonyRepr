@@ -30,3 +30,4 @@ A list containing:
 \description{
 Function to iteratively combine individual-level kernels to estimate within-colony variation
 }
+\concept{Function}

@@ -26,4 +26,5 @@ species_curves_tot_PN
 \description{
 A data frame containing many species-colonies and their estimated colony representativeness
 }
+\concept{Data}
 \keyword{datasets}

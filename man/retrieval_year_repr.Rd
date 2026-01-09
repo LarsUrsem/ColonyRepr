@@ -17,4 +17,5 @@ retrieval_year_repr
 \description{
 Used in the vignettes
 }
+\concept{Data}
 \keyword{datasets}

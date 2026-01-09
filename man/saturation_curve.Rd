@@ -27,4 +27,5 @@ saturation_curve
 \description{
 A data frame containing information on combined contours surface areas and the parameters of the Michaelis-Menten curve fitted to this data.
 }
+\concept{Data}
 \keyword{datasets}

@@ -15,4 +15,5 @@ A tibble containing estimated representativeness after including data from a giv
 \description{
 Function to determine a saturation curve per number of included individuals.
 }
+\concept{Function}
 \keyword{internal}

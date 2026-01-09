@@ -19,3 +19,4 @@ Returns a list with two elements>
 \description{
 Determine Utilization Density
 }
+\concept{Function}

@@ -30,3 +30,4 @@ Returns a list with two elements:
 `KDE_filter_tracks_fun()` takes a tibble with (GLS-)tracking data from a colony and determines which migratory tracks (within a specified month) contain sufficient location estimates.
 It then goes on to check if a colony has enough tracked individuals with sufficient location estimates.
 }
+\concept{Function}

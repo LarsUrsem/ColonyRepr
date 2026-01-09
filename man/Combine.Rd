@@ -17,4 +17,5 @@ Combine
 \description{
 Created and used in the vignettes
 }
+\concept{Data}
 \keyword{datasets}

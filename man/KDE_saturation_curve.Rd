@@ -19,3 +19,4 @@ A list with:
 \description{
 Fit saturation curve model to combined areas
 }
+\concept{Function}

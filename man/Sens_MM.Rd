@@ -22,4 +22,5 @@ Sens_MM
 \description{
 A data frame example data that will help indicate the uncertainty around the estimated colony representativeness
 }
+\concept{Data}
 \keyword{datasets}

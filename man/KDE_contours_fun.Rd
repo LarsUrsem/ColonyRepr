@@ -23,3 +23,4 @@ An sf-object containing the kernel contour as a polygon geometry and some additi
 \description{
 Extract kernel vertices from UD-object
 }
+\concept{Function}

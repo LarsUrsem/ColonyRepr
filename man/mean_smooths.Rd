@@ -17,4 +17,5 @@ mean_smooths
 \description{
 A data frame containing species-mean smoothing parameters, calculated from smoothing parameters determined using LSCV per winter track
 }
+\concept{Data}
 \keyword{datasets}

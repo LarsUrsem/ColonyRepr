@@ -23,3 +23,4 @@ A tibble containing estimated representativeness after including data from a giv
 \description{
 Function to determine representativeness of data collected up to and including certain retrieval years.
 }
+\concept{Function}
