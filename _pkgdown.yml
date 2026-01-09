@@ -10,3 +10,13 @@ reference:
     desc: Data that is used in the package vignettes
     contents:
       - has_concept("Data")
+articles:
+  - title: Getting started
+    contents:
+      - Pipeline_vignette
+  - title: Uncertainty
+    contents:
+      - Uncertainty_in_Repr
+  - title: Multi-colony analysis
+    contents:
+      - Grouped
