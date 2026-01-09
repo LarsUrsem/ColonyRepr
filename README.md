@@ -4,12 +4,12 @@ Methods were initially developed for internal use within the [SEATRACK program](
 
 ## Installation
 ```
-# The development version of this package from GitHub can be installed using:
+# The development version of this package can be installed from GitHub using:
 devtools::install_github("LarsUrsem/ColonyRepr")
 ```
 
 ## Usage
-In short, the functions in the package can be used to estimate total within-colony variation in wintering site selection and how much of that is currently captured by the individuals you've been able to track.
+In short, the functions in the package can be used to estimate total within-colony variation in wintering site selection and how much of that variation is currently captured by the individuals that have been tracked.
 These estimates are based on individual tracking information collected by light-level geolocators.
 
 ## Key contributors
