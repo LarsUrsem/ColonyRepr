@@ -223,6 +223,7 @@ contours_fig %>%
 
 
 ```
+
 You can see that contours get added iteratively, and that a new surface area is calculated. Surface area is thus expected to increase with every added contour, but only if the new contour covers an area that hadn't been covered by the other contours yet. Otherwise, if no new area is covered, the surface area of all contours combined will not increase. For that reason, the increase in surface area in the last iteration is relatively small, since the new contour overlaps a lot with one of the contours that was already present.
 <br>
 In this visualisation, it also becomes clear that contour sizes differ among tracks, even though the same percentages were used to construct the contours (50% in our example). As such, differences in sizes arise from differences in movement behaviour during the assessed period (December in our example). Individuals that move around will get bigger contours compared to individuals that don't move as much. This is just good to be aware of.

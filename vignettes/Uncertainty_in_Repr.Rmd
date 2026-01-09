@@ -57,6 +57,7 @@ Sens_MM_100 %>%
   ggplot(aes(x = n_inds, y = Repr_100ind))+
   geom_point()
 ```
+
 You can clearly see that the amount of within-colony variation captured by 100 tracked individuals differs among the fitted curves. Especially at low sample sizes, the variation is huge and problematic. As sample size increases, expected representativeness captured by 100 individuals seems to stabalize, which indicates lower uncertainty of any inference made from these curves fitted at higher sample sizes.
 <br> 
 Whether or not you've reached this stabilized stage depends on your study system but is good to check using `KDE_Repr_per_individual_fun`.
@@ -103,6 +104,7 @@ Sens_MM_100_unc %>%
 
 
 ```
+
 You can see that the initially the Repr estimates are with high uncertainty and that this stabalizes to medium uncertainty at a sample size of 31 and than later to low uncertainty at 36. However, at a sample size of 50 the cumulative difference with the previous ten points just exceeds 5, giving this point a medium uncertainty level.
 Given this new information, we can no longer say that some of the estimates based on lower sample sizes have low uncertainty. We thus have to add another condition, changing low uncertainty levels to medium if a higher sample size obtains a medium uncertainty. We should do the same for medium uncertainties when higher sample sizes obtain a high uncertainty.
 
@@ -163,6 +165,7 @@ retrieval_year_repr %>%
 
   
 ```
+
 Here we can see that uncertainty decreases as the sample size increases (see change in point color). Also, we can see that over the years we've increased our understanding of what happens at a colony scale, as representativeness keeps on increasing. However, we can also see that this increase in representativeness did not increase that much anymore after 2021, even though we've collected tracking data of an additional 15-20 individuals.
 
 

@@ -89,6 +89,7 @@ species_curves_tot_PN %>%
         legend.key.width = unit(0.5, units="cm"))+
   coord_cartesian(clip = "off") 
 ```
+
 You can see that within the assessed dataset of many species-colonies, there is a wide range of currently captured representativeness, from around 10% to almost 100%. I've also indicated some particular differences among species-colonies through the use of different fill colors. We have many species-colonies that were not assessed in this analysis due to a low sample size (orange; determined with the `min_Ninds_per_col`-argument in `KDE_filter_tracks_fun()`). We also have several species-colonies that we identified to be affected by polar night (blue) to a degree that inference of their location estimates is likely biased towards non-polar night areas.
 <br>
 <br>
@@ -157,6 +158,7 @@ species_curves_CR_ridge_prep %>%
 
 
 ```
+
 Now we can nicely see that variation in colony representativeness is present among both species and colonies within a species. For the species at the top of this plot we generally capture a high amount of the estimated within-colony variation whereas we generally don't capture as much for the species at the bottom of this plot. Then there are also several species where the histogram is very spread out, indicating strong among-colony variation.
 <br>
 <br>
