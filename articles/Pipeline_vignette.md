@@ -1,4 +1,6 @@
-# Vignette for assessing colony representativeness using ColonyRepr
+# Assessing colony representativeness using ColonyRepr
+
+## This vignette provides an example of how to estimate within-colony variation in wintering site selection and how much of that variation in currently captured
 
 ``` r
 library(ColonyRepr)
@@ -6,8 +8,6 @@ library(tidyverse)
 library(sf)
 library(units)
 ```
-
-## Here an example of how to estimate within-colony variation in wintering site selection and how much of that variation in currently captured
 
 ### Data
 

@@ -1,4 +1,4 @@
-# Grouped analysis SEATRACK
+# Multi-colony analysis SEATRACK
 
 ``` r
 library(ColonyRepr)
