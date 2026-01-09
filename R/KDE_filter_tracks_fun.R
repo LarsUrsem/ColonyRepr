@@ -12,6 +12,8 @@
 #' @return Returns a list with two elements:
 #' 1) a tibble containing all the migratory tracks of the colony that meet the required number of locations (as set in `min_points_per_track`);
 #' 2) a vector with the names of the tracks that meet the requirements.
+#' @concept Function
+#'
 #' @export
 #'
 #' @import dplyr

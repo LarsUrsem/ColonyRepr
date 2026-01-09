@@ -7,6 +7,8 @@
 #' 1) An object of class `estUD` as produced by `adehabitatHR::kernelUD()`.
 #' 2) The track-specific projection (character string)
 #'
+#' @concept Function
+#'
 #' @export
 #'
 #' @import dplyr

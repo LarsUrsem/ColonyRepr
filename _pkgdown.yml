@@ -1,4 +1,12 @@
 url: https://larsursem.github.io/ColonyRepr/
 template:
   bootstrap: 5
-
+reference:
+  - title: Functions
+    desc: The functions within the ColonyRepr package
+    contents:
+      - has_concept("Function")
+  - title: Package data
+    desc: Data that is used in the package vignettes
+    contents:
+      - has_concept("Data")

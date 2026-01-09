@@ -7,6 +7,8 @@
 #' @param projection provide the projection character string that is appropriate for the assessed track (e.g. as returned from `KDE_UD_fun()`). This projection will be used to calculate the surface area of the constructed contour polygon.
 #'
 #' @return An sf-object containing the kernel contour as a polygon geometry and some additional track information
+#' @concept Function
+#'
 #' @export
 #'
 #' @import dplyr

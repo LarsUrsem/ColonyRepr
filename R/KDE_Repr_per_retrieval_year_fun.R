@@ -5,6 +5,8 @@
 #' @param colony_projection Provide a projection that is appropriate for the whole colony
 #'
 #' @returns A tibble containing estimated representativeness after including data from a given retrieval year, thus assessing all data collected up to that point.
+#' @concept Function
+#'
 #' @export
 #'
 #' @import dplyr

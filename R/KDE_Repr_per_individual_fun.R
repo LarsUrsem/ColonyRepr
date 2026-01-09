@@ -3,6 +3,8 @@
 #' @param combined_areas_df An tibble with combined-area information as produced by `KDE_combine_areas_fun()`.
 #'
 #' @returns A tibble containing estimated representativeness after including data from a given retrieval year, thus assessing all data collected up to that point.
+#' @concept Function
+#'
 #' @export
 #' @keywords internal
 #'

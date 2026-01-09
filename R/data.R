@@ -17,6 +17,7 @@
 #'   \item{individ_year}{A unique identifier for the tracked individual in a specific winter}
 #'   \item{retrieval_year}{}
 #' }
+#' @concept Data
 "example_tracks"
 
 
@@ -32,6 +33,7 @@
 #'   \item{species}{smoothing parameters (h_par) are provided for 15 seabird species}
 #'   \item{mean_h}{mean values from track-specific smoothing parameters determined using LSCV}
 #' }
+#' @concept Data
 "mean_smooths"
 
 
@@ -56,6 +58,7 @@
 #'   \item{Repr}{}
 #'
 #' }
+#' @concept Data
 "saturation_curve"
 
 
@@ -76,6 +79,7 @@
 #'   \item{Repr_5}{}
 #'   \item{perc}{}
 #' }
+#' @concept Data
 "Sens_MM"
 
 
@@ -100,6 +104,7 @@
 #'   \item{Perc_desired}{}
 #'   \item{PN_prop_missing}{}
 #' }
+#' @concept Data
 "species_curves_tot_PN"
 
 
@@ -121,6 +126,7 @@
 #'   \item{retrieval_year}{}
 #'   \item{h_par}{}
 #' }
+#' @concept Data
 "contours_all"
 
 
@@ -134,6 +140,7 @@
 #'   \item{list}{}
 #'
 #' }
+#' @concept Data
 "Combine"
 
 
@@ -147,5 +154,5 @@
 #'   \item{XXX}{}
 #'
 #' }
-
+#' @concept Data
 "retrieval_year_repr"

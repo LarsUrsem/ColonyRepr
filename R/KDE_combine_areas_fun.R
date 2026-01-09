@@ -10,6 +10,7 @@
 #'     \item{Kernel_areas}{A tibble with KDE bootstrap results}
 #'     \item{colony_projection}{The LAEA projection used}
 #'   }
+#' @concept Function
 #' @export
 #'
 #' @import dplyr

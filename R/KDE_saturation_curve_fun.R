@@ -7,6 +7,7 @@
 #'     \item{Kernel_areas}{Input data with A_mean and B_mean added}
 #'     \item{Kernel_areas_summarised}{Summary table with fitted curve statistics}
 #'     }
+#' @concept Function
 #'
 #' @export
 #'
